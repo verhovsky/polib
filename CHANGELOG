@@ -5,6 +5,7 @@ Changelog
 Version 2.0.0 (2020/09/24)
 --------------------------
  - Dropped support for Python 3.5 and bellow
+ - Removed backported textwrap.TextWrapper object
 
 Version 1.1.0 (2017/11/27)
 --------------------------
