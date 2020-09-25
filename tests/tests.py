@@ -210,7 +210,7 @@ msgstr ""
 
     def test_detect_encoding3(self):
         """
-        Test with an utf8 .po file.
+        Test with a utf8 .po file.
         """
         self.assertEqual(polib.detect_encoding("tests/test_utf8.po"), "UTF-8")
 
@@ -218,18 +218,15 @@ msgstr ""
         """
         Test with utf8 data (no file).
         """
-        f = open("tests/test_utf8.po", "rb")
-        data = str(f.read(), "utf-8")
-        try:
+        with open("tests/test_utf8.po", "rb") as f:
+            data = str(f.read(), "utf-8")
             self.assertEqual(polib.detect_encoding(data), "UTF-8")
-        finally:
-            f.close()
 
     def test_detect_encoding5(self):
         """
         Test with utf8 .mo file.
         """
-        self.assertEqual(polib.detect_encoding("tests/test_utf8.mo", True), "UTF-8")
+        self.assertEqual(polib.detect_encoding("tests/test_utf8.mo"), "UTF-8")
 
     def test_detect_encoding6(self):
         """
@@ -244,7 +241,7 @@ msgstr ""
         Test with iso-8859-15 .mo file.
         """
         self.assertEqual(
-            polib.detect_encoding("tests/test_iso-8859-15.mo", True), "ISO_8859-15"
+            polib.detect_encoding("tests/test_iso-8859-15.mo"), "ISO_8859-15"
         )
 
     def test_escape(self):

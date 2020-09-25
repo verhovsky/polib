@@ -50,7 +50,7 @@ def _pofile_or_mofile(f, type, **kwargs):
     # get the file encoding
     enc = kwargs.get("encoding")
     if enc is None:
-        enc = detect_encoding(f, type == "mofile")
+        enc = detect_encoding(f)
 
     # parse the file
     kls = type == "pofile" and _POFileParser or _MOFileParser
@@ -65,7 +65,7 @@ def _pofile_or_mofile(f, type, **kwargs):
     return instance
 
 
-def _is_file(filename_or_contents):
+def _is_filepath(filename_or_contents):
     """
     Safely returns the value of os.path.exists(filename_or_contents).
 
@@ -145,21 +145,32 @@ def mofile(mofile, **kwargs):
 def detect_encoding(file, binary_mode=False):
     """
     Try to detect the encoding used by the ``file``. The ``file`` argument can
-    be a PO or MO file path or a string containing the contents of the file.
+    be a PO or MO file path or a bytes object containing the contents of the file.
     If the encoding cannot be detected, the function will return the value of
     ``default_encoding``.
 
     Arguments:
 
     ``file``
-        string, full or relative path to the po/mo file or its content.
+        string or pathlike-object or bytes, either the full or relative path to the po/mo file
+        or its content as bytes.
 
     ``binary_mode``
-        boolean, set this to True if ``file`` is a mo file.
+        boolean, deprecated, has no effect.
     """
     PATTERN = r'"?Content-Type:.+? charset=([\w_\-:\.]+)'
     rxt = re.compile(PATTERN)
     rxb = re.compile(PATTERN.encode("latin-1"))
+
+    if binary_mode:
+        from warnings import warn
+
+        warn(
+            "the binary_mode= argument for detect_encoding() is no longer used, "
+            "files are always opened in binary mode when detecting the encoding",
+            DeprecationWarning,
+            2,
+        )
 
     def charset_exists(charset):
         """Check whether ``charset`` is valid or not."""
@@ -169,7 +180,7 @@ def detect_encoding(file, binary_mode=False):
             return False
         return True
 
-    if not _is_file(file):
+    if not _is_filepath(file):
         match = rxt.search(file)
         if match:
             enc = match.group(1).strip()
@@ -177,13 +188,10 @@ def detect_encoding(file, binary_mode=False):
                 return enc
     else:
         with open(file, "rb") as f:
-            for l in f.readlines():
+            for l in f:
                 match = rxb.search(l)
                 if match:
-                    f.close()
-                    enc = match.group(1).strip()
-                    if not isinstance(enc, str):
-                        enc = enc.decode("utf-8")
+                    enc = match.group(1).strip().decode("utf-8")
                     if charset_exists(enc):
                         return enc
     return default_encoding
@@ -240,13 +248,13 @@ def natural_sort(lst):
 
 
 class POParseError(ValueError):
-    """Subclass of ValueError with the following additional properties:
+    """
+    Subclass of ``ValueError`` with the following additional properties:
     msg: The unformatted error message
     fpath: The path of the file being parsed
     lineno: The index of the line in doc where parsing failed
     """
 
-    # Copied from JSONDecodeError
     def __init__(self, msg, fpath, lineno):
         ValueError.__init__(self, f"{msg}: {fpath}(line {lineno})")
         self.msg = msg
@@ -272,14 +280,14 @@ class _BaseFile(list):
         Constructor, accepts the following keyword arguments:
 
         ``pofile``
-            string, the path to the po or mo file, or its content as a string.
+            string, the path to the po or mo file, or its contents as bytes.
 
         ``wrapwidth``
             integer, the wrap width, only useful when the ``-w`` option was
             passed to xgettext (optional, default: ``78``).
 
         ``encoding``
-            string, the encoding to use, defaults to ``default_encoding``
+            string, the encoding to use, defaults to the ``default_encoding``
             global variable (optional).
 
         ``check_for_duplicates``
@@ -289,7 +297,7 @@ class _BaseFile(list):
         list.__init__(self)
         # the opened file handle
         pofile = kwargs.get("pofile", None)
-        if pofile and _is_file(pofile):
+        if pofile and _is_filepath(pofile):
             self.fpath = pofile
         else:
             self.fpath = kwargs.get("fpath")
@@ -338,9 +346,9 @@ class _BaseFile(list):
 
     def append(self, entry):
         """
-        Overridden method to check for duplicates entries, if a user tries to
-        add an entry that is already in the file, the method will raise a
-        ``ValueError`` exception.
+        Overridden method that checks for duplicate entries. If a user tries to
+        add an entry that is already in the file, a ``ValueError`` exception
+        will be raised.
 
         Argument:
 
@@ -355,9 +363,9 @@ class _BaseFile(list):
 
     def insert(self, index, entry):
         """
-        Overridden method to check for duplicates entries, if a user tries to
-        add an entry that is already in the file, the method will raise a
-        ``ValueError`` exception.
+        Overridden method that checks for duplicates entries. If a user tries to
+        add an entry that is already in the file, a ``ValueError`` exception
+        will be raised.
 
         Arguments:
 
@@ -378,10 +386,8 @@ class _BaseFile(list):
         e = POEntry(msgid="")
         mdata = self.ordered_metadata()
         if mdata:
-            strs = []
-            for name, value in mdata:
-                # Strip whitespace off each line in a multi-line entry
-                strs.append(f"{name}: {value}")
+            # Strip whitespace off each line in a multi-line entry
+            strs = [f"{name}: {value}" for name, value in mdata]
             e.msgstr = "\n".join(strs) + "\n"
         if self.metadata_is_fuzzy:
             e.flags.append("fuzzy")
@@ -505,18 +511,6 @@ class _BaseFile(list):
         offsets = []
         entries = self.translated_entries()
 
-        # the keys are sorted in the .mo file
-        def cmp(_self, other):
-            # msgfmt compares entries with msgctxt if it exists
-            self_msgid = _self.msgctxt and _self.msgctxt or _self.msgid
-            other_msgid = other.msgctxt and other.msgctxt or other.msgid
-            if self_msgid > other_msgid:
-                return 1
-            elif self_msgid < other_msgid:
-                return -1
-            else:
-                return 0
-
         # add metadata entry
         entries.sort(key=lambda o: o.msgid_with_context.encode("utf-8"))
         mentry = self.metadata_as_entry()
@@ -597,7 +591,7 @@ class POFile(_BaseFile):
 
     def __str__(self):
         """
-        Returns the unicode representation of the po file.
+        Returns the string representation of the po file.
         """
         ret, headers = "", self.header.split("\n")
         for header in headers:
@@ -807,7 +801,7 @@ class _BaseEntry:
 
     def __str__(self, wrapwidth=78):
         """
-        Returns the unicode representation of the entry.
+        Returns the string representation of the entry.
         """
         if self.obsolete:
             delflag = "#~ "
@@ -1001,7 +995,7 @@ class POEntry(_BaseEntry):
 
     def __cmp__(self, other):
         """
-        Called by comparison operations if rich comparison is not defined.
+        Used to implement rich comparison.
         """
         # First: Obsolete test
         if self.obsolete != other.obsolete:
@@ -1172,10 +1166,10 @@ class _POFileParser:
         Keyword arguments:
 
         ``pofile``
-            string, path to the po file or its content
+            string, path to the po file or its contents
 
         ``encoding``
-            string, the encoding to use, defaults to ``default_encoding``
+            string, the encoding to use, defaults to the ``default_encoding``
             global variable (optional).
 
         ``check_for_duplicates``
@@ -1183,7 +1177,7 @@ class _POFileParser:
             file (optional, default: ``False``).
         """
         enc = kwargs.get("encoding", default_encoding)
-        if _is_file(pofile):
+        if _is_filepath(pofile):
             try:
                 self.fhandle = open(pofile, "rt", encoding=enc)
             except LookupError:
