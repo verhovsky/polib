@@ -141,9 +141,9 @@ msgid "Some msgstr with "double\" quotes"
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except OSError:
+        except polib.POParseError:
             exc = sys.exc_info()[1]
-            msg = "Syntax error in po file (line 3): unescaped double quote found"
+            msg = "unescaped double quote found: (line 3)"
             self.assertEqual(str(exc), msg)
 
     def test_unescaped_double_quote2(self):
@@ -158,9 +158,9 @@ msgstr ""
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except OSError:
+        except polib.POParseError:
             exc = sys.exc_info()[1]
-            msg = "Syntax error in po file (line 4): unescaped double quote found"
+            msg = "unescaped double quote found: (line 4)"
             self.assertEqual(str(exc), msg)
 
     def test_unescaped_double_quote3(self):
@@ -174,9 +174,9 @@ msgid ""Some msgstr with double\" quotes"
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except OSError:
+        except polib.POParseError:
             exc = sys.exc_info()[1]
-            msg = "Syntax error in po file (line 3): unescaped double quote found"
+            msg = "unescaped double quote found: (line 3)"
             self.assertEqual(str(exc), msg)
 
     def test_unescaped_double_quote4(self):
@@ -191,9 +191,9 @@ msgstr ""
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except OSError:
+        except polib.POParseError:
             exc = sys.exc_info()[1]
-            msg = "Syntax error in po file (line 4): unescaped double quote found"
+            msg = "unescaped double quote found: (line 4)"
             self.assertEqual(str(exc), msg)
 
     def test_detect_encoding1(self):
@@ -398,7 +398,7 @@ class TestBaseFile(unittest.TestCase):
 
     def test_save1(self):
         pofile = polib.POFile()
-        self.assertRaises(IOError, pofile.save)
+        self.assertRaises(TypeError, pofile.save)
 
     def test_save2(self):
         fd, tmpfile = tempfile.mkstemp()
@@ -680,7 +680,9 @@ msgstr "une cha\u00eene sans contexte"
         self.assertEqual(mo.__str__(), expected)
 
     def test_invalid_version(self):
-        self.assertRaises(IOError, polib.mofile, "tests/test_invalid_version.mo")
+        self.assertRaises(
+            polib.MOParseError, polib.mofile, "tests/test_invalid_version.mo"
+        )
         polib.mofile("tests/test_version_1.1.mo")
 
     def test_no_header(self):

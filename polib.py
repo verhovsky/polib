@@ -2,7 +2,7 @@
 # vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4:
 
 """
-**polib** allows you to manipulate, create, modify gettext files (pot, po and
+**polib** allows you to manipulate, create and modify gettext files (pot, po and
 mo files).  You can load existing files, iterate through it's entries, add,
 modify entries, comments or metadata, etc. or create new po files from scratch.
 
@@ -33,6 +33,8 @@ __all__ = [
     "escape",
     "unescape",
     "detect_encoding",
+    "POParseError",
+    "MOParseError",
 ]
 
 
@@ -237,6 +239,28 @@ def natural_sort(lst):
     return sorted(lst, key=alphanum_key)
 
 
+class POParseError(ValueError):
+    """Subclass of ValueError with the following additional properties:
+    msg: The unformatted error message
+    fpath: The path of the file being parsed
+    lineno: The index of the line in doc where parsing failed
+    """
+
+    # Copied from JSONDecodeError
+    def __init__(self, msg, fpath, lineno):
+        ValueError.__init__(self, f"{msg}: {fpath}(line {lineno})")
+        self.msg = msg
+        self.fpath = fpath
+        self.lineno = lineno
+
+    def __reduce__(self):
+        return self.__class__, (self.msg, self.fpath, self.lineno)
+
+
+class MOParseError(ValueError):
+    pass
+
+
 class _BaseFile(list):
     """
     Common base class for the :class:`~polib.POFile` and :class:`~polib.MOFile`
@@ -378,7 +402,7 @@ class _BaseFile(list):
             string, the method to use for output.
         """
         if self.fpath is None and fpath is None:
-            raise OSError("You must provide a file path to save() method")
+            raise TypeError("You must provide a file path to the save() method")
         contents = getattr(self, repr_method)()
         if fpath is None:
             fpath = self.fpath
@@ -1289,9 +1313,8 @@ class _POFileParser:
             if tokens[0] in keywords and nb_tokens > 1:
                 line = line[len(tokens[0]) :].lstrip()
                 if re.search(r'([^\\]|^)"', line[1:-1]):
-                    raise OSError(
-                        "Syntax error in po file %s(line %s): "
-                        "unescaped double quote found" % (fpath, self.current_line)
+                    raise POParseError(
+                        "unescaped double quote found", fpath, self.current_line
                     )
                 self.current_token = line
                 self.process(keywords[tokens[0]])
@@ -1308,9 +1331,8 @@ class _POFileParser:
             elif line[:1] == '"':
                 # we are on a continuation line
                 if re.search(r'([^\\]|^)"', line[1:-1]):
-                    raise OSError(
-                        "Syntax error in po file %s(line %s): "
-                        "unescaped double quote found" % (fpath, self.current_line)
+                    raise POParseError(
+                        "unescaped double quote found", fpath, self.current_line
                     )
                 self.process("mc")
 
@@ -1338,10 +1360,7 @@ class _POFileParser:
 
             elif tokens[0] == "#|":
                 if nb_tokens <= 1:
-                    raise OSError(
-                        "Syntax error in po file %s(line %s)"
-                        % (fpath, self.current_line)
-                    )
+                    raise POParseError("", fpath, self.current_line)
 
                 # Remove the marker and any whitespace right after that.
                 line = line[2:].lstrip()
@@ -1354,17 +1373,15 @@ class _POFileParser:
 
                 if nb_tokens == 2:
                     # Invalid continuation line.
-                    raise OSError(
-                        "Syntax error in po file %s(line %s): "
-                        "invalid continuation line" % (fpath, self.current_line)
+                    raise POParseError(
+                        "invalid continuation line", fpath, self.current_line
                     )
 
                 # we are on a "previous translation" comment line,
                 if tokens[1] not in prev_keywords:
                     # Unknown keyword in previous translation comment.
-                    raise OSError(
-                        "Syntax error in po file %s(line %s): "
-                        "unknown keyword %s" % (fpath, self.current_line, tokens[1])
+                    raise POParseError(
+                        f"unknown keyword {tokens[1]}", fpath, self.current_line
                     )
 
                 # Remove the keyword and any whitespace
@@ -1374,9 +1391,7 @@ class _POFileParser:
                 self.process(prev_keywords[tokens[1]])
 
             else:
-                raise OSError(
-                    f"Syntax error in po file {fpath}(line {self.current_line})"
-                )
+                raise POParseError("", fpath, self.current_line)
 
         if self.current_entry and len(tokens) > 0 and not tokens[0].startswith("#"):
             # since entries are added when another entry is found, we must add
@@ -1441,7 +1456,7 @@ class _POFileParser:
             if action():
                 self.current_state = state
         except Exception:
-            raise OSError("Syntax error in po file (line %s)" % self.current_line)
+            raise POParseError("", "", self.current_line)  # TODO: missing fpath
 
     # state handlers
 
@@ -1638,14 +1653,14 @@ class _MOFileParser:
         elif magic_number == MOFile.MAGIC_SWAPPED:
             ii = ">II"
         else:
-            raise OSError("Invalid mo file, magic number is incorrect !")
+            raise MOParseError("magic number is incorrect")
         self.instance.magic_number = magic_number
         # parse the version number and the number of strings
         version, numofstrings = self._readbinary(ii, 8)
         # from MO file format specs: "A program seeing an unexpected major
         # revision number should stop reading the MO file entirely"
         if version >> 16 not in (0, 1):
-            raise OSError("Invalid mo file, unexpected major revision number")
+            raise MOParseError("unexpected major revision number")
         self.instance.version = version
         # original strings and translation strings hash table offset
         msgids_hash_offset, msgstrs_hash_offset = self._readbinary(ii, 8)
@@ -1717,7 +1732,7 @@ class _MOFileParser:
 
     def _readbinary(self, fmt, numbytes):
         """
-        Private method that unpack n bytes of data using format <fmt>.
+        Private method that unpacks n bytes of data using format <fmt>.
         It returns a tuple or a mixed value if the tuple length is 1.
         """
         bytes = self.fhandle.read(numbytes)

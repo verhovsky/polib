@@ -60,3 +60,14 @@ The ``MOEntry`` class
 .. autoclass:: polib.MOEntry
     :members:
 
+The ``POParseError`` class
+--------------------------
+
+.. autoexception:: polib.POParseError
+    :members:
+
+The ``MOParseError`` class
+--------------------------
+
+.. autoexception:: polib.MOParseError
+    :members:
