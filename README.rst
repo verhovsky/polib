@@ -18,21 +18,19 @@ polib
     :alt: License
 
 
-polib is a library to manipulate, create, modify gettext files (pot, po and mo
-files). You can load existing files, iterate through it's entries, add, modify
-entries, comments or metadata, etc... or create new po files from scratch.
+``polib`` is a library to manipulate, create, modify gettext files (``.pot``,
+``.po`` and ``.mo`` files). You can load existing files, iterate through their
+entries, add, modify entries, comments or metadata, etc. or create new ``.po``
+files from scratch.
 
-polib supports out of the box any version of python ranging from 2.5 to latest
-3.X version.
+``polib`` supports Python 3.6+.
 
-polib is pretty stable now and is used by many 
+``polib`` is pretty stable now and is used by many
 `opensource projects <http://polib.readthedocs.org/en/latest/projects.html>`_.
 
-The project code and bugtracker is hosted on 
-`Bitbucket <http://bitbucket.org/izi/polib/>`_. 
+The project code and bugtracker are hosted on
+`Github <https://github.com/izimobil/polib>`_.
 
-polib is generously documented, you can `browse the documentation online 
-<http://polib.readthedocs.org/>`_, a good start is to read 
+``polib`` is generously documented, you can `browse the documentation online
+<http://polib.readthedocs.org/>`_, a good start is to read
 `the quickstart guide  <http://polib.readthedocs.org/en/latest/quickstart.html>`_.
-
-Thanks for downloading polib !
