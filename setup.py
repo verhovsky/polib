@@ -21,20 +21,17 @@ maintainer = " ".join(author_data[0:-1])
 maintainer_email = author_data[-1][1:-1]
 desc = "A library to manipulate gettext files (po and mo files)."
 
-if polib.PY3:
-    enc = {"encoding": "UTF-8"}
-else:
-    enc = {}
-
 long_desc = r"""
 {}
 
 {}
 
 """.format(
-    open("README.rst", **enc).read(),
-    open("CHANGELOG", **enc).read(),
+    open("README.rst", encoding="utf-8").read(),
+    open("CHANGELOG", encoding="utf-8").read(),
 )
+
+download_url = f"https://pypi.python.org/packages/source/p/polib/polib-{polib.__version__}.tar.gz"
 
 if __name__ == "__main__":
     setup(
@@ -46,9 +43,8 @@ if __name__ == "__main__":
         author_email=maintainer_email,
         maintainer=maintainer,
         maintainer_email=maintainer_email,
-        url="http://bitbucket.org/izi/polib/",
-        download_url="https://pypi.python.org/packages/source/p/polib/polib-%s.tar.gz"
-        % polib.__version__,
+        url="https://github.com/izimobil/polib",
+        download_url=download_url,
         license="MIT",
         platforms=["posix"],
         classifiers=[

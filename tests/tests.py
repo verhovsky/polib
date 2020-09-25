@@ -11,16 +11,13 @@ sys.path.insert(1, os.path.abspath("."))
 
 import polib
 
-from polib import u
-
 
 class TestFunctions(unittest.TestCase):
     def test_pofile_and_mofile1(self):
         """
         Test bad usage of pofile/mofile.
         """
-        data = u(
-            """# test for pofile/mofile with string buffer
+        data = """# test for pofile/mofile with string buffer
 msgid ""
 msgstr ""
 "Project-Id-Version: django\n"
@@ -28,11 +25,10 @@ msgstr ""
 msgid "foo"
 msgstr "bar"
 """
-        )
         po = polib.pofile(data)
         self.assertTrue(isinstance(po, polib.POFile))
         self.assertEqual(po.encoding, "utf-8")
-        self.assertEqual(po[0].msgstr, u("bar"))
+        self.assertEqual(po[0].msgstr, "bar")
 
     def test_indented_pofile(self):
         """
@@ -222,12 +218,8 @@ msgstr ""
         """
         Test with utf8 data (no file).
         """
-        if polib.PY3:
-            f = open("tests/test_utf8.po", "rb")
-            data = str(f.read(), "utf-8")
-        else:
-            f = open("tests/test_utf8.po")
-            data = f.read()
+        f = open("tests/test_utf8.po", "rb")
+        data = str(f.read(), "utf-8")
         try:
             self.assertEqual(polib.detect_encoding(data), "UTF-8")
         finally:
@@ -243,17 +235,13 @@ msgstr ""
         """
         Test with iso-8859-15 .po file.
         """
-        self.assertEqual(
-            polib.detect_encoding("tests/test_iso-8859-15.po"), "ISO_8859-15"
-        )
+        self.assertEqual(polib.detect_encoding("tests/test_iso-8859-15.po"), "ISO_8859-15")
 
     def test_detect_encoding7(self):
         """
         Test with iso-8859-15 .mo file.
         """
-        self.assertEqual(
-            polib.detect_encoding("tests/test_iso-8859-15.mo", True), "ISO_8859-15"
-        )
+        self.assertEqual(polib.detect_encoding("tests/test_iso-8859-15.mo", True), "ISO_8859-15")
 
     def test_escape(self):
         """
@@ -299,7 +287,7 @@ msgstr ""
 
     def test_empty(self):
         po = polib.pofile("")
-        self.assertEqual(po.__unicode__(), '#\nmsgid ""\nmsgstr ""\n')
+        self.assertEqual(po.__str__(), '#\nmsgid ""\nmsgstr ""\n')
 
     def test_linenum_1(self):
         po = polib.pofile("tests/test_utf8.po")
@@ -331,18 +319,14 @@ class TestBaseFile(unittest.TestCase):
 
     def test_append2(self):
         def add_duplicate():
-            pofile = polib.pofile(
-                "tests/test_pofile_helpers.po", check_for_duplicates=True
-            )
+            pofile = polib.pofile("tests/test_pofile_helpers.po", check_for_duplicates=True)
             pofile.append(polib.POEntry(msgid="and"))
 
         self.assertRaises(ValueError, add_duplicate)
 
     def test_append3(self):
         def add_duplicate():
-            pofile = polib.pofile(
-                "tests/test_pofile_helpers.po", check_for_duplicates=True
-            )
+            pofile = polib.pofile("tests/test_pofile_helpers.po", check_for_duplicates=True)
             pofile.append(polib.POEntry(msgid="and", msgctxt="some context"))
 
         self.assertRaises(ValueError, add_duplicate)
@@ -361,9 +345,7 @@ class TestBaseFile(unittest.TestCase):
 
     def test_insert2(self):
         def add_duplicate():
-            pofile = polib.pofile(
-                "tests/test_pofile_helpers.po", check_for_duplicates=True
-            )
+            pofile = polib.pofile("tests/test_pofile_helpers.po", check_for_duplicates=True)
             pofile.insert(0, polib.POEntry(msgid="and", msgstr="y"))
 
         self.assertRaises(ValueError, add_duplicate)
@@ -373,12 +355,12 @@ class TestBaseFile(unittest.TestCase):
         f = open("tests/test_fuzzy_header.po")
         lines = f.readlines()[2:]
         f.close()
-        self.assertEqual(pofile.metadata_as_entry().__unicode__(), "".join(lines))
+        self.assertEqual(pofile.metadata_as_entry().__str__(), "".join(lines))
 
     def test_find1(self):
         pofile = polib.pofile("tests/test_pofile_helpers.po")
         entry = pofile.find("and")
-        self.assertEqual(entry.msgstr, u("y"))
+        self.assertEqual(entry.msgstr, "y")
 
     def test_find2(self):
         pofile = polib.pofile("tests/test_pofile_helpers.po")
@@ -388,21 +370,21 @@ class TestBaseFile(unittest.TestCase):
     def test_find3(self):
         pofile = polib.pofile("tests/test_pofile_helpers.po")
         entry = pofile.find("package", include_obsolete_entries=True)
-        self.assertEqual(entry.msgstr, u("pacote"))
+        self.assertEqual(entry.msgstr, "pacote")
 
     def test_find4(self):
         pofile = polib.pofile("tests/test_utf8.po")
         entry1 = pofile.find("test context", msgctxt="@context1")
         entry2 = pofile.find("test context", msgctxt="@context2")
-        self.assertEqual(entry1.msgstr, u("test context 1"))
-        self.assertEqual(entry2.msgstr, u("test context 2"))
+        self.assertEqual(entry1.msgstr, "test context 1")
+        self.assertEqual(entry2.msgstr, "test context 2")
 
     def test_find5(self):
         pofile = polib.pofile("tests/test_msgctxt.po")
         entry1 = pofile.find("some string")
         entry2 = pofile.find("some string", msgctxt="Some message context")
-        self.assertEqual(entry1.msgstr, u("une cha\u00eene sans contexte"))
-        self.assertEqual(entry2.msgstr, u("une cha\u00eene avec contexte"))
+        self.assertEqual(entry1.msgstr, "une cha\u00eene sans contexte")
+        self.assertEqual(entry2.msgstr, "une cha\u00eene avec contexte")
 
     def test_save1(self):
         pofile = polib.POFile()
@@ -425,18 +407,18 @@ class TestBaseFile(unittest.TestCase):
         lines = f.readlines()[2:]
         f.close()
         mdata = [
-            ("Project-Id-Version", u("PACKAGE VERSION")),
-            ("Report-Msgid-Bugs-To", u("")),
-            ("POT-Creation-Date", u("2010-02-08 16:57+0100")),
-            ("PO-Revision-Date", u("YEAR-MO-DA HO:MI+ZONE")),
-            ("Last-Translator", u("FULL NAME <EMAIL@ADDRESS>")),
-            ("Language-Team", u("LANGUAGE <LL@li.org>")),
-            ("MIME-Version", u("1.0")),
-            ("Content-Type", u("text/plain; charset=UTF-8")),
-            ("Content-Transfer-Encoding", u("8bit")),
-            ("X-Poedit-SearchPath-1", u("Foo")),
-            ("X-Poedit-SearchPath-2", u("Bar")),
-            ("X-Poedit-SearchPath-10", u("Baz")),
+            ("Project-Id-Version", "PACKAGE VERSION"),
+            ("Report-Msgid-Bugs-To", ""),
+            ("POT-Creation-Date", "2010-02-08 16:57+0100"),
+            ("PO-Revision-Date", "YEAR-MO-DA HO:MI+ZONE"),
+            ("Last-Translator", "FULL NAME <EMAIL@ADDRESS>"),
+            ("Language-Team", "LANGUAGE <LL@li.org>"),
+            ("MIME-Version", "1.0"),
+            ("Content-Type", "text/plain; charset=UTF-8"),
+            ("Content-Transfer-Encoding", "8bit"),
+            ("X-Poedit-SearchPath-1", "Foo"),
+            ("X-Poedit-SearchPath-2", "Bar"),
+            ("X-Poedit-SearchPath-10", "Baz"),
         ]
         self.assertEqual(pofile.ordered_metadata(), mdata)
 
@@ -445,21 +427,18 @@ class TestBaseFile(unittest.TestCase):
         f = codecs.open("tests/test_merge_after.po", encoding="utf8")
         expected = f.read()
         f.close()
-        self.assertEqual(pofile.__unicode__(), expected)
+        self.assertEqual(pofile.__str__(), expected)
 
     def test_unicode2(self):
         pofile = polib.pofile("tests/test_iso-8859-15.po")
         f = codecs.open("tests/test_iso-8859-15.po", encoding="iso-8859-15")
         expected = f.read()
         f.close()
-        self.assertEqual(pofile.__unicode__(), expected)
+        self.assertEqual(pofile.__str__(), expected)
 
     def test_str(self):
         pofile = polib.pofile("tests/test_iso-8859-15.po")
-        if polib.PY3:
-            f = codecs.open("tests/test_iso-8859-15.po", encoding="iso-8859-15")
-        else:
-            f = open("tests/test_iso-8859-15.po")
+        f = codecs.open("tests/test_iso-8859-15.po", encoding="iso-8859-15")
         expected = f.read()
         f.close()
         self.assertEqual(str(pofile), expected)
@@ -489,9 +468,7 @@ msgstr ""
     def test_sort(self):
         a1 = polib.POEntry(msgid="a1", occurrences=[("b.py", 1), ("b.py", 3)])
         a2 = polib.POEntry(msgid="a2")
-        a3 = polib.POEntry(
-            msgid="a1", occurrences=[("b.py", 1), ("b.py", 3)], obsolete=True
-        )
+        a3 = polib.POEntry(msgid="a1", occurrences=[("b.py", 1), ("b.py", 3)], obsolete=True)
         b1 = polib.POEntry(msgid="b1", occurrences=[("b.py", 1), ("b.py", 3)])
         b2 = polib.POEntry(msgid="b2", occurrences=[("d.py", 3), ("b.py", 1)])
         c1 = polib.POEntry(msgid="c1", occurrences=[("a.py", 1), ("b.py", 1)])
@@ -505,8 +482,7 @@ msgstr ""
         pofile.append(c1)
         pofile.append(c2)
         pofile.sort()
-        expected = u(
-            """#
+        expected = """#
 msgid ""
 msgstr ""
 
@@ -536,8 +512,8 @@ msgstr ""
 #~ msgid "a1"
 #~ msgstr ""
 """
-        )
-        self.assertEqual(pofile.__unicode__(), expected)
+
+        self.assertEqual(pofile.__str__(), expected)
 
     def test_trailing_comment(self):
         pofile = polib.pofile("tests/test_trailing_comment.po")
@@ -660,16 +636,10 @@ class TestMoFile(unittest.TestCase):
         mo = polib.mofile("tests/test_utf8.mo", wrapwidth=78)
         mo.save_as_pofile(tmpfile)
         try:
-            if polib.PY3:
-                f = open(tmpfile, encoding="utf-8")
-            else:
-                f = open(tmpfile)
+            f = open(tmpfile, encoding="utf-8")
             s1 = f.read()
             f.close()
-            if polib.PY3:
-                f = open("tests/test_save_as_pofile.po", encoding="utf-8")
-            else:
-                f = open("tests/test_save_as_pofile.po")
+            f = open("tests/test_save_as_pofile.po", encoding="utf-8")
             s2 = f.read()
             f.close()
             self.assertEqual(s1, s2)
@@ -679,8 +649,7 @@ class TestMoFile(unittest.TestCase):
     def test_msgctxt(self):
         # import pdb; pdb.set_trace()
         mo = polib.mofile("tests/test_msgctxt.mo")
-        expected = u(
-            """msgid ""
+        expected = """msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8\u005cn"
 
 msgctxt "Some message context"
@@ -696,8 +665,7 @@ msgstr[1] "pluriel"
 msgid "some string"
 msgstr "une cha\u00eene sans contexte"
 """
-        )
-        self.assertEqual(mo.__unicode__(), expected)
+        self.assertEqual(mo.__str__(), expected)
 
     def test_invalid_version(self):
         self.assertRaises(IOError, polib.mofile, "tests/test_invalid_version.mo")
@@ -705,8 +673,7 @@ msgstr "une cha\u00eene sans contexte"
 
     def test_no_header(self):
         mo = polib.mofile("tests/test_no_header.mo")
-        expected = u(
-            """msgid ""
+        expected = """msgid ""
 msgstr ""
 
 msgid "bar"
@@ -715,8 +682,7 @@ msgstr "rab"
 msgid "foo"
 msgstr "oof"
 """
-        )
-        self.assertEqual(mo.__unicode__(), expected)
+        self.assertEqual(mo.__str__(), expected)
 
 
 class TestTextWrap(unittest.TestCase):
