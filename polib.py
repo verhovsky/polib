@@ -40,9 +40,6 @@ __all__ = [
 default_encoding = "utf-8"
 
 
-# _pofile_or_mofile {{{
-
-
 def _pofile_or_mofile(f, type, **kwargs):
     """
     Internal function used by :func:`polib.pofile` and :func:`polib.mofile` to
@@ -66,10 +63,6 @@ def _pofile_or_mofile(f, type, **kwargs):
     return instance
 
 
-# }}}
-# _is_file {{{
-
-
 def _is_file(filename_or_contents):
     """
     Safely returns the value of os.path.exists(filename_or_contents).
@@ -84,10 +77,6 @@ def _is_file(filename_or_contents):
         return os.path.exists(filename_or_contents)
     except (ValueError, UnicodeEncodeError):
         return False
-
-
-# }}}
-# function pofile() {{{
 
 
 def pofile(pofile, **kwargs):
@@ -120,10 +109,6 @@ def pofile(pofile, **kwargs):
     return _pofile_or_mofile(pofile, "pofile", **kwargs)
 
 
-# }}}
-# function mofile() {{{
-
-
 def mofile(mofile, **kwargs):
     """
     Convenience function that parses the mo file ``mofile`` and returns a
@@ -153,10 +138,6 @@ def mofile(mofile, **kwargs):
         instance).
     """
     return _pofile_or_mofile(mofile, "mofile", **kwargs)
-
-
-# }}}
-# function detect_encoding() {{{
 
 
 def detect_encoding(file, binary_mode=False):
@@ -206,10 +187,6 @@ def detect_encoding(file, binary_mode=False):
     return default_encoding
 
 
-# }}}
-# function escape() {{{
-
-
 def escape(st):
     """
     Escapes the characters ``\\\\``, ``\\t``, ``\\n``, ``\\r`` and ``"`` in
@@ -222,10 +199,6 @@ def escape(st):
         .replace("\n", r"\n")
         .replace('"', r"\"")
     )
-
-
-# }}}
-# function unescape() {{{
 
 
 def unescape(st):
@@ -249,10 +222,6 @@ def unescape(st):
     return re.sub(r'\\(\\|n|t|r|")', unescape_repl, st)
 
 
-# }}}
-# function natural_sort() {{{
-
-
 def natural_sort(lst):
     """
     Sort naturally the given list.
@@ -266,10 +235,6 @@ def natural_sort(lst):
         return [convert(c) for c in re.split("([0-9]+)", key)]
 
     return sorted(lst, key=alphanum_key)
-
-
-# }}}
-# class _BaseFile {{{
 
 
 class _BaseFile(list):
@@ -599,10 +564,6 @@ class _BaseFile(list):
         return mixed
 
 
-# }}}
-# class POFile {{{
-
-
 class POFile(_BaseFile):
     """
     Po (or Pot) file reader/writer.
@@ -708,10 +669,6 @@ class POFile(_BaseFile):
                 entry.obsolete = True
 
 
-# }}}
-# class MOFile {{{
-
-
 class MOFile(_BaseFile):
     """
     Mo file reader/writer.
@@ -782,10 +739,6 @@ class MOFile(_BaseFile):
         Convenience method to keep the same interface with POFile instances.
         """
         return []
-
-
-# }}}
-# class _BaseEntry {{{
 
 
 class _BaseEntry:
@@ -906,10 +859,6 @@ class _BaseEntry:
         for line in lines:
             ret.append('{}"{}"'.format(delflag, escape(line)))
         return ret
-
-
-# }}}
-# class POEntry {{{
 
 
 class POEntry(_BaseEntry):
@@ -1151,10 +1100,6 @@ class POEntry(_BaseEntry):
         return hash((self.msgid, self.msgstr))
 
 
-# }}}
-# class MOEntry {{{
-
-
 class MOEntry(_BaseEntry):
     """
     Represents a mo file entry.
@@ -1188,10 +1133,6 @@ class MOEntry(_BaseEntry):
 
     def __hash__(self):
         return hash((self.msgid, self.msgstr))
-
-
-# }}}
-# class _POFileParser {{{
 
 
 class _POFileParser:
@@ -1644,10 +1585,6 @@ class _POFileParser:
         return False
 
 
-# }}}
-# class _MOFileParser {{{
-
-
 class _MOFileParser:
     """
     A class to parse binary mo files.
@@ -1790,10 +1727,6 @@ class _MOFileParser:
         return tup
 
 
-# }}}
-# class TextWrapper {{{
-
-
 class TextWrapper(textwrap.TextWrapper):
     """
     Subclass of textwrap.TextWrapper that backport the
@@ -1876,10 +1809,6 @@ class TextWrapper(textwrap.TextWrapper):
         return lines
 
 
-# }}}
-# function wrap() {{{
-
-
 def wrap(text, width=70, **kwargs):
     """
     Wrap a single paragraph of text, returning a list of wrapped lines.
@@ -1887,6 +1816,3 @@ def wrap(text, width=70, **kwargs):
     if sys.version_info < (2, 6):
         return TextWrapper(width=width, **kwargs).wrap(text)
     return textwrap.wrap(text, width=width, **kwargs)
-
-
-# }}}
