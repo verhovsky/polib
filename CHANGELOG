@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 2.0.0 (2020/09/24)
+--------------------------
+ - Dropped support for Python 3.5 and bellow
+
 Version 1.1.0 (2017/11/27)
 --------------------------
  - Fixed entries sorting when generating mo file (Fixes #78)
