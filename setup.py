@@ -31,7 +31,9 @@ long_desc = r"""
     open("CHANGELOG", encoding="utf-8").read(),
 )
 
-download_url = f"https://pypi.python.org/packages/source/p/polib/polib-{polib.__version__}.tar.gz"
+download_url = (
+    f"https://pypi.python.org/packages/source/p/polib/polib-{polib.__version__}.tar.gz"
+)
 
 if __name__ == "__main__":
     setup(

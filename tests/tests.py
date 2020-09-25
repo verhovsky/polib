@@ -235,13 +235,17 @@ msgstr ""
         """
         Test with iso-8859-15 .po file.
         """
-        self.assertEqual(polib.detect_encoding("tests/test_iso-8859-15.po"), "ISO_8859-15")
+        self.assertEqual(
+            polib.detect_encoding("tests/test_iso-8859-15.po"), "ISO_8859-15"
+        )
 
     def test_detect_encoding7(self):
         """
         Test with iso-8859-15 .mo file.
         """
-        self.assertEqual(polib.detect_encoding("tests/test_iso-8859-15.mo", True), "ISO_8859-15")
+        self.assertEqual(
+            polib.detect_encoding("tests/test_iso-8859-15.mo", True), "ISO_8859-15"
+        )
 
     def test_escape(self):
         """
@@ -319,14 +323,18 @@ class TestBaseFile(unittest.TestCase):
 
     def test_append2(self):
         def add_duplicate():
-            pofile = polib.pofile("tests/test_pofile_helpers.po", check_for_duplicates=True)
+            pofile = polib.pofile(
+                "tests/test_pofile_helpers.po", check_for_duplicates=True
+            )
             pofile.append(polib.POEntry(msgid="and"))
 
         self.assertRaises(ValueError, add_duplicate)
 
     def test_append3(self):
         def add_duplicate():
-            pofile = polib.pofile("tests/test_pofile_helpers.po", check_for_duplicates=True)
+            pofile = polib.pofile(
+                "tests/test_pofile_helpers.po", check_for_duplicates=True
+            )
             pofile.append(polib.POEntry(msgid="and", msgctxt="some context"))
 
         self.assertRaises(ValueError, add_duplicate)
@@ -345,7 +353,9 @@ class TestBaseFile(unittest.TestCase):
 
     def test_insert2(self):
         def add_duplicate():
-            pofile = polib.pofile("tests/test_pofile_helpers.po", check_for_duplicates=True)
+            pofile = polib.pofile(
+                "tests/test_pofile_helpers.po", check_for_duplicates=True
+            )
             pofile.insert(0, polib.POEntry(msgid="and", msgstr="y"))
 
         self.assertRaises(ValueError, add_duplicate)
@@ -468,7 +478,9 @@ msgstr ""
     def test_sort(self):
         a1 = polib.POEntry(msgid="a1", occurrences=[("b.py", 1), ("b.py", 3)])
         a2 = polib.POEntry(msgid="a2")
-        a3 = polib.POEntry(msgid="a1", occurrences=[("b.py", 1), ("b.py", 3)], obsolete=True)
+        a3 = polib.POEntry(
+            msgid="a1", occurrences=[("b.py", 1), ("b.py", 3)], obsolete=True
+        )
         b1 = polib.POEntry(msgid="b1", occurrences=[("b.py", 1), ("b.py", 3)])
         b2 = polib.POEntry(msgid="b2", occurrences=[("d.py", 3), ("b.py", 1)])
         c1 = polib.POEntry(msgid="c1", occurrences=[("a.py", 1), ("b.py", 1)])

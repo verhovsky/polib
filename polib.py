@@ -660,7 +660,9 @@ class POFile(_BaseFile):
         """
         Convenience method that returns the list of untranslated entries.
         """
-        return [e for e in self if not e.translated() and not e.obsolete and not e.fuzzy]
+        return [
+            e for e in self if not e.translated() and not e.obsolete and not e.fuzzy
+        ]
 
     def fuzzy_entries(self):
         """
@@ -842,7 +844,9 @@ class _BaseEntry:
         ret += self._str_field("msgid", delflag, "", self.msgid, wrapwidth)
         # write the msgid_plural if any
         if self.msgid_plural:
-            ret += self._str_field("msgid_plural", delflag, "", self.msgid_plural, wrapwidth)
+            ret += self._str_field(
+                "msgid_plural", delflag, "", self.msgid_plural, wrapwidth
+            )
         if self.msgstr_plural:
             # write the msgstr_plural if any
             msgstrs = self.msgstr_plural
@@ -851,7 +855,9 @@ class _BaseEntry:
             for index in keys:
                 msgstr = msgstrs[index]
                 plural_index = "[%s]" % index
-                ret += self._str_field("msgstr", delflag, plural_index, msgstr, wrapwidth)
+                ret += self._str_field(
+                    "msgstr", delflag, plural_index, msgstr, wrapwidth
+                )
         else:
             # otherwise write the msgstr
             ret += self._str_field("msgstr", delflag, "", self.msgstr, wrapwidth)
@@ -894,7 +900,9 @@ class _BaseEntry:
             # quick and dirty trick to get the real field name
             fieldname = fieldname[9:]
 
-        ret = ['{}{}{} "{}"'.format(delflag, fieldname, plural_index, escape(lines.pop(0)))]
+        ret = [
+            '{}{}{} "{}"'.format(delflag, fieldname, plural_index, escape(lines.pop(0)))
+        ]
         for line in lines:
             ret.append('{}"{}"'.format(delflag, escape(line)))
         return ret
@@ -1390,7 +1398,8 @@ class _POFileParser:
             elif tokens[0] == "#|":
                 if nb_tokens <= 1:
                     raise OSError(
-                        "Syntax error in po file %s(line %s)" % (fpath, self.current_line)
+                        "Syntax error in po file %s(line %s)"
+                        % (fpath, self.current_line)
                     )
 
                 # Remove the marker and any whitespace right after that.
@@ -1424,7 +1433,9 @@ class _POFileParser:
                 self.process(prev_keywords[tokens[1]])
 
             else:
-                raise OSError(f"Syntax error in po file {fpath}(line {self.current_line})")
+                raise OSError(
+                    f"Syntax error in po file {fpath}(line {self.current_line})"
+                )
 
         if self.current_entry and len(tokens) > 0 and not tokens[0].startswith("#"):
             # since entries are added when another entry is found, we must add
@@ -1546,7 +1557,9 @@ class _POFileParser:
         if self.current_state in ["mc", "ms", "mx"]:
             self.instance.append(self.current_entry)
             self.current_entry = POEntry(linenum=self.current_line)
-        self.current_entry.flags += [c.strip() for c in self.current_token[3:].split(",")]
+        self.current_entry.flags += [
+            c.strip() for c in self.current_token[3:].split(",")
+        ]
         return True
 
     def handle_pp(self):
