@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # License: MIT (see LICENSE file provided)
 # vim600: fdm=marker tabstop=4 shiftwidth=4 expandtab ai
@@ -28,11 +27,11 @@ else:
     enc = {}
 
 long_desc = r"""
-%s
+{}
 
-%s
+{}
 
-""" % (
+""".format(
     open("README.rst", **enc).read(),
     open("CHANGELOG", **enc).read(),
 )

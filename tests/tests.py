@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import codecs
 import os
@@ -146,7 +145,7 @@ msgid "Some msgstr with "double\" quotes"
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except IOError:
+        except OSError:
             exc = sys.exc_info()[1]
             msg = "Syntax error in po file (line 3): unescaped double quote found"
             self.assertEqual(str(exc), msg)
@@ -163,7 +162,7 @@ msgstr ""
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except IOError:
+        except OSError:
             exc = sys.exc_info()[1]
             msg = "Syntax error in po file (line 4): unescaped double quote found"
             self.assertEqual(str(exc), msg)
@@ -179,7 +178,7 @@ msgid ""Some msgstr with double\" quotes"
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except IOError:
+        except OSError:
             exc = sys.exc_info()[1]
             msg = "Syntax error in po file (line 3): unescaped double quote found"
             self.assertEqual(str(exc), msg)
@@ -196,7 +195,7 @@ msgstr ""
         try:
             po = polib.pofile(data)
             self.fail("Unescaped quote not detected")
-        except IOError:
+        except OSError:
             exc = sys.exc_info()[1]
             msg = "Syntax error in po file (line 4): unescaped double quote found"
             self.assertEqual(str(exc), msg)
@@ -227,7 +226,7 @@ msgstr ""
             f = open("tests/test_utf8.po", "rb")
             data = str(f.read(), "utf-8")
         else:
-            f = open("tests/test_utf8.po", "r")
+            f = open("tests/test_utf8.po")
             data = f.read()
         try:
             self.assertEqual(polib.detect_encoding(data), "UTF-8")
